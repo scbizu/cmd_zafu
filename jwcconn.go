@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/iconv.v1"
-
 	"io/ioutil"
 	"net/http/cookiejar"
 
@@ -370,14 +368,12 @@ func main() {
 				color.Black(day + ":")
 				fmt.Println()
 				for _, v := range class {
-					cd, err := iconv.Open("utf-8", "gbk")
+					cd := mahonia.NewDecoder("GBK")
 					if err != nil {
 						color.Red("字符转换失败了...")
 						os.Exit(1)
 					}
-					defer cd.Close()
-					// fmt.Println(len(v))
-					color.Black(cd.ConvString(v) + "\n")
+					color.Black(cd.ConvertString(v) + "\n")
 					fmt.Println()
 				}
 			}
