@@ -18,6 +18,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/fatih/color"
 	"github.com/mkideal/cli"
+	"github.com/otiai10/gosseract"
 	"github.com/scbizu/Zafu_jwcInterface/jwc_api/jwcpkg"
 	"github.com/scbizu/mahonia"
 )
@@ -39,6 +40,9 @@ var (
 	username string
 	password string
 )
+
+//code Writer -> Code Reader
+// var ch chan bool
 
 const (
 
@@ -118,7 +122,7 @@ func post(Rurl string, c *http.Client, username string, password string, verifyC
 	c.Jar = Jar
 	resp, err := c.PostForm(Rurl, postValue)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("POST Responce Lost")
 	}
 	Scookies := resp.Cookies()
 	return Scookies, nil
@@ -289,6 +293,22 @@ func findOutScore(client *http.Client, Vs string, Vg string, xn string, xq strin
 	return string(data), nil
 }
 
+func codeReader(ring bool) string {
+	if ring {
+		client, err := gosseract.NewClient()
+		if err != nil {
+			fmt.Println(err)
+		}
+		out, err := client.Src("code.gif").Out()
+		if err != nil {
+			fmt.Println(err)
+		}
+		outstr := strings.Trim(out, "\n")
+		return outstr
+	}
+	return ""
+}
+
 //MAIN
 
 func main() {
@@ -339,19 +359,23 @@ func main() {
 				os.Exit(1)
 			}
 			io.Copy(file, res.Body)
-
-			fmt.Println("请查看code.gif， 然后输入验证码， 看不清输入0重新获取验证码")
-			fmt.Scanf("%s", &verifyCode)
-			if verifyCode != "0" {
-				color.Green("验证码输入成功,正在请求教务处...")
+			verifyCode = codeReader(true)
+			if verifyCode != "" && verifyCode != " " && len(verifyCode) == 4 {
+				fmt.Printf("%q", verifyCode)
 				break
 			}
+			// fmt.Println("请查看code.gif， 然后输入验证码， 看不清输入0重新获取验证码")
+			// fmt.Scanf("%s", &verifyCode)
+			// if verifyCode != "0" {
+			// 	color.Green("验证码输入成功,正在请求教务处...")
+			// 	break
+			// }
 			defer res.Body.Close()
 		}
 		//POST
 		_, err = post(defaultURL, c, username, password, verifyCode, VIEWSTATE, VIEWSTATEGENERATOR, tempCookies)
 		if err != nil {
-			color.Red("POST失败~")
+			color.Red(err.Error())
 			os.Exit(1)
 		}
 		//OP
@@ -373,7 +397,7 @@ func main() {
 						color.Red("字符转换失败了...")
 						os.Exit(1)
 					}
-					color.Black(cd.ConvertString(v) + "\n")
+					color.Cyan(cd.ConvertString(v) + "\n")
 					fmt.Println()
 				}
 			}
@@ -387,7 +411,7 @@ func main() {
 			}
 			examInfo := jwcpkg.FetchExam(exam)
 			for k, v := range examInfo {
-				color.Black(k + "		" + " Class: " + v.Class + "		" + " Deadline: " + "		" + v.Deadline)
+				color.Cyan(k + "		" + " Class: " + v.Class + "		" + " Deadline: " + "		" + v.Deadline)
 			}
 			break
 		case "score":
@@ -405,7 +429,7 @@ func main() {
 			}
 			scoreInfo := jwcpkg.FetchScoreTD(data)
 			for _, v := range scoreInfo {
-				color.Black("课程:" + v.ClassName + "		" + "成绩:" + v.Score + "		" + "绩点:" + v.GPA + "		" + "学分:" + v.Credit + "		")
+				color.Cyan("课程:" + v.ClassName + "		" + "成绩:" + v.Score + "		" + "绩点:" + v.GPA + "		" + "学分:" + v.Credit + "		")
 				fmt.Println()
 			}
 			break
