@@ -43,19 +43,19 @@ var (
 const (
 
 	//模拟登陆第一个入口地址
-	loginURLGate0 string = "http://210.33.60.8:8080/"
+	loginURLGate0 string = "http://210.33.60.5/"
 	//模拟登陆第一个入口验证码地址
-	vrcodeURLGate0 string = "http://210.33.60.8:8080/CheckCode.aspx"
+	vrcodeURLGate0 string = "http://210.33.60.5/CheckCode.aspx"
 	//首页地址
 	// loggedURL string = "http://210.33.60.8:8080/xs_main.aspx?xh="
 	//默认登录页
-	defaultURL string = "http://210.33.60.8:8080/default2.aspx"
+	defaultURL string = "http://210.33.60.5/default2.aspx"
 	//课程表
-	courseURL string = "http://210.33.60.8:8080/xskbcx.aspx?xh="
+	courseURL string = "http://210.33.60.5/xskbcx.aspx?xh="
 
-	examURL string = "http://210.33.60.8:8080/xskscx.aspx?xh="
+	examURL string = "http://210.33.60.5/xskscx.aspx?xh="
 	//查成绩
-	scoreURL string = "http://210.33.60.8:8080/xscjcx.aspx?xh="
+	scoreURL string = "http://210.33.60.5/xscjcx.aspx?xh="
 )
 
 /**
@@ -139,6 +139,9 @@ func getCourseData(c *http.Client) (*goquery.Document, error) {
 	}
 
 	res, err := ioutil.ReadAll(finalRes.Body)
+	if err != nil {
+		return nil, err
+	}
 	defer finalRes.Body.Close()
 
 	r := strings.NewReader(string(res))
